@@ -1,40 +1,43 @@
-import React, { useEffect, useState } from 'react';
+// src/components/dashboard/NotOurWalletsPanel.tsx
+import React from 'react';
 
 interface NotOurWallet {
   id: string;
   percentOfSupply: number;
   solBalance: number;
-  pnl: number; // in SOL, for example
+  pnl: number;
 }
 
 interface NotOurWalletsPanelProps {
   wallets: NotOurWallet[];
+  enableCheckboxes: boolean;
+  // If you need to track which not-our-wallets are selected, add a callback here
 }
 
-const NotOurWalletsPanel: React.FC<NotOurWalletsPanelProps> = ({ wallets }) => {
-  const [filteredWallets, setFilteredWallets] = useState<NotOurWallet[]>([]);
-
-  useEffect(() => {
-    // Sort wallets by percentOfSupply descending
-    const sorted = [...wallets].sort((a, b) => b.percentOfSupply - a.percentOfSupply);
-    setFilteredWallets(sorted);
-  }, [wallets]);
-
+const NotOurWalletsPanel: React.FC<NotOurWalletsPanelProps> = ({
+  wallets,
+  enableCheckboxes,
+}) => {
   return (
     <div className="bg-white p-4 rounded shadow h-full">
       <h2 className="font-bold text-lg mb-4">Not Our Wallets</h2>
-
-      {filteredWallets.length === 0 ? (
+      {wallets.length === 0 ? (
         <p className="text-gray-500">No wallets available</p>
       ) : (
         <ul className="space-y-2">
-          {filteredWallets.map((wallet) => (
-            <li key={wallet.id} className="flex justify-between border-b pb-2">
-              <div>
-                <p className="font-medium">Wallet {wallet.id}</p>
-                <p className="text-sm text-gray-600">
-                  Holds: <span className="font-semibold">{wallet.percentOfSupply}%</span> of supply
-                </p>
+          {wallets.map((wallet) => (
+            <li
+              key={wallet.id}
+              className="flex items-center justify-between border-b pb-2"
+            >
+              <div className="flex items-center space-x-2">
+                {enableCheckboxes && <input type="checkbox" />}
+                <div>
+                  <p className="font-medium">Wallet {wallet.id}</p>
+                  <p className="text-sm text-gray-600">
+                    Holds: <span className="font-semibold">{wallet.percentOfSupply}%</span> of supply
+                  </p>
+                </div>
               </div>
               <div className="text-right">
                 <p className="text-sm">

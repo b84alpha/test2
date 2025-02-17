@@ -1,168 +1,100 @@
-// src/pages/dashboard.tsx  (or /index.tsx if you prefer the root path)
+// src/pages/index.tsx
 import React, { useState } from 'react';
+import WalletsPanel from '@/components/dashboard/WalletsPanel';
+import NotOurWalletsPanel from '@/components/dashboard/NotOurWalletsPanel';
+import TradePanel from '@/components/dashboard/TradePanel';
+import OrdersPanel from '@/components/dashboard/OrdersPanel';
+import TopIndicators from '@/components/dashboard/TopIndicators';
 
-// -- Mock components. Replace with your real ones if you want more logic --
-function WalletsPanel() {
-  return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h3 className="text-lg font-semibold mb-3">Our Wallets</h3>
-      <div className="space-y-2">
-        <label className="flex items-center space-x-2">
-          <input type="checkbox" />
-          <span>Wallet 1 — 2.50 SOL / 10000 XYZ</span>
-        </label>
-        <label className="flex items-center space-x-2">
-          <input type="checkbox" />
-          <span>Wallet 2 — 1.30 SOL / 5000 XYZ</span>
-        </label>
-        <label className="flex items-center space-x-2">
-          <input type="checkbox" />
-          <span>Wallet 3 — 3.10 SOL / 8000 XYZ</span>
-        </label>
-      </div>
-    </div>
-  );
+type TradeMode = 'buy' | 'sell';
+type TradeMethod = 'market' | 'limit-mc' | 'limit-nowallet';
+
+interface Wallet {
+  id: string;
+  solBalance: number;
+  tokenBalance: number;
+  lastUsed?: Date;
 }
 
-function NotOurWalletsPanel() {
-  return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h3 className="text-lg font-semibold mb-3">Not Our Wallets</h3>
-      <ul className="space-y-2">
-        <li className="flex justify-between border-b pb-2">
-          <span>Wallet X1 (5% supply)</span>
-          <span className="text-sm text-gray-500">PnL: 2.5 SOL</span>
-        </li>
-        <li className="flex justify-between border-b pb-2">
-          <span>Wallet X2 (2.5% supply)</span>
-          <span className="text-sm text-gray-500">PnL: -1.2 SOL</span>
-        </li>
-      </ul>
-    </div>
-  );
-}
+export default function DashboardPage() {
+  // Mock data for demonstration
+  const [ourWallets] = useState<Wallet[]>([
+    { id: 'W1', solBalance: 2.5, tokenBalance: 1000, lastUsed: new Date() },
+    { id: 'W2', solBalance: 1.3, tokenBalance: 500, lastUsed: new Date(Date.now() - 600000) },
+    { id: 'W3', solBalance: 5.0, tokenBalance: 2500, lastUsed: new Date(Date.now() - 3600000) },
+  ]);
 
-function TradePanel() {
-  return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h3 className="text-lg font-semibold mb-3">Trade Execution</h3>
+  const [selectedWallets, setSelectedWallets] = useState<string[]>([]);
 
-      {/* Toggle: Buy/Sell */}
-      <div className="flex space-x-2 mb-4">
-        <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-          Buy
-        </button>
-        <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
-          Sell
-        </button>
-      </div>
+  const [notOurWallets] = useState([
+    { id: 'X1', percentOfSupply: 5, solBalance: 10, pnl: 2.5 },
+    { id: 'X2', percentOfSupply: 2.5, solBalance: 4, pnl: -1.2 },
+    { id: 'X3', percentOfSupply: 1.8, solBalance: 0.5, pnl: 0.1 },
+  ]);
 
-      {/* Method Select */}
-      <div className="mb-4">
-        <label className="block font-medium mb-1">Method</label>
-        <select className="border w-full rounded px-3 py-2">
-          <option value="market">Market</option>
-          <option value="limit-mc">Limit (Market Cap)</option>
-          <option value="limit-nowallet">Limit (Not Our Wallet)</option>
-        </select>
-      </div>
+  // Orders
+  const [limitOrders, setLimitOrders] = useState([]);
+  const [advancedOrders, setAdvancedOrders] = useState([]);
+  const handleCancelOrder = (id: string) => {
+    setLimitOrders((prev) => prev.filter((o) => o.id !== id));
+    setAdvancedOrders((prev) => prev.filter((o) => o.id !== id));
+  };
 
-      {/* Example input */}
-      <div className="mb-4">
-        <label className="block font-medium mb-1">Amount (SOL)</label>
-        <input type="number" className="border w-full rounded px-3 py-2" />
-      </div>
+  // We'll track the trade mode & method from the TradePanel
+  const [tradeMode, setTradeMode] = useState<TradeMode>('buy');
+  const [tradeMethod, setTradeMethod] = useState<TradeMethod>('market');
 
-      <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
-        Execute
-      </button>
-    </div>
-  );
-}
-
-function OrdersPanel() {
-  return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h3 className="text-lg font-semibold mb-3">Orders</h3>
-      <p className="text-gray-500 text-sm">No active orders right now.</p>
-    </div>
-  );
-}
-
-function QuickSellButtons() {
-  return (
-    <div className="bg-white rounded-lg shadow p-4 flex space-x-4">
-      <button className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded">
-        Sell 25%
-      </button>
-      <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded">
-        Sell 50%
-      </button>
-      <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
-        Sell 100%
-      </button>
-    </div>
-  );
-}
-
-const DashboardPage: React.FC = () => {
-  // If you have real data, manage it here. Right now, just a static UI.
+  // Callback from TradePanel:
+  const handleTradeSettingsChange = (mode: TradeMode, method: TradeMethod) => {
+    setTradeMode(mode);
+    setTradeMethod(method);
+  };
 
   return (
     <div className="space-y-6">
-      {/* TOP INDICATORS (5 cards) */}
-      <div className="grid grid-cols-5 gap-6">
-        {/* Card 1 */}
-        <div className="bg-white rounded-lg shadow p-4 flex flex-col items-center justify-center text-center">
-          <p className="text-sm text-gray-500 mb-1">Total SOL</p>
-          <h2 className="text-2xl font-bold text-gray-800">12.34</h2>
+      {/* TOP INDICATORS */}
+      <TopIndicators
+        totalSol={ourWallets.reduce((sum, w) => sum + w.solBalance, 0)}
+        totalTokens={ourWallets.reduce((sum, w) => sum + w.tokenBalance, 0)}
+        totalTokensInSol={15.2}
+        pnl={3.14}
+        marketCap={250000}
+        totalVolume={100000}
+        ourVolume={2200}
+        buyPressure={45}
+        sellPressure={30}
+      />
+
+      {/* MIDDLE ROW: 4 (Wallets) | 3 (Trade) | 5 (Not Our Wallets) */}
+      <div className="grid grid-cols-12 gap-6">
+        {/* Our Wallets: col-span-4 */}
+        <div className="col-span-4">
+          <WalletsPanel wallets={ourWallets} onSelectWallets={setSelectedWallets} />
         </div>
-        {/* Card 2 */}
-        <div className="bg-white rounded-lg shadow p-4 flex flex-col items-center justify-center text-center">
-          <p className="text-sm text-gray-500 mb-1">Token Balance</p>
-          <h2 className="text-2xl font-bold text-gray-800">150,000 XYZ</h2>
+
+        {/* Trade Panel: col-span-3 */}
+        <div className="col-span-3">
+          <TradePanel
+            selectedWallets={selectedWallets}
+            onSettingsChange={handleTradeSettingsChange}
+          />
         </div>
-        {/* Card 3 */}
-        <div className="bg-white rounded-lg shadow p-4 flex flex-col items-center justify-center text-center">
-          <p className="text-sm text-gray-500 mb-1">Market Cap</p>
-          <h2 className="text-2xl font-bold text-gray-800">$2,340,000</h2>
-        </div>
-        {/* Card 4 */}
-        <div className="bg-white rounded-lg shadow p-4 flex flex-col items-center justify-center text-center">
-          <p className="text-sm text-gray-500 mb-1">Total Profit</p>
-          <h2 className="text-2xl font-bold text-green-600">4.56 SOL</h2>
-        </div>
-        {/* Card 5 */}
-        <div className="bg-yellow-100 rounded-lg shadow p-4 flex flex-col items-center justify-center text-center">
-          <p className="text-sm text-yellow-800 mb-1">Liquidity</p>
-          <h2 className="text-2xl font-bold text-yellow-700">120 SOL</h2>
+
+        {/* Not Our Wallets: col-span-5 */}
+        <div className="col-span-5">
+          <NotOurWalletsPanel
+            wallets={notOurWallets}
+            enableCheckboxes={tradeMode === 'buy' && tradeMethod === 'limit-nowallet'}
+          />
         </div>
       </div>
 
-      {/* Middle row: Our Wallets (left), Trade Panel (center), Not Our Wallets (right) */}
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 md:col-span-3">
-          <WalletsPanel />
-        </div>
-        <div className="col-span-12 md:col-span-6">
-          <TradePanel />
-        </div>
-        <div className="col-span-12 md:col-span-3">
-          <NotOurWalletsPanel />
-        </div>
-      </div>
-
-      {/* Bottom row: Orders + QuickSell */}
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 md:col-span-8">
-          <OrdersPanel />
-        </div>
-        <div className="col-span-12 md:col-span-4">
-          <QuickSellButtons />
-        </div>
-      </div>
+      {/* BOTTOM: Orders Panel (3 columns inside) */}
+      <OrdersPanel
+        limitOrders={limitOrders}
+        advancedOrders={advancedOrders}
+        onCancel={handleCancelOrder}
+      />
     </div>
   );
-};
-
-export default DashboardPage;
+}
